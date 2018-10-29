@@ -1,0 +1,31 @@
+{
+    "name": "pixidos/doctrine-query-object",
+    "license": "MIT",
+    "type": "library",
+    "description": "Lightweight Doctrine QueryObject imlementation",
+    "keywords": [
+        "doctrine",
+        "query",
+        "query object"
+    ],
+    "homepage": "https://github.com/pixidos",
+    "authors": [
+        {
+            "name": "Ondra Votava",
+            "email": "ondra@votava.it"
+        }
+    ],
+    "support": {
+        "email": "ondra@votava.it",
+        "issues": "https://github.com/Pixidos/DoctrineQueryObject/issues"
+    },
+    "require": {
+        "php": ">=7.1.0",
+        "doctrine/orm": "^2.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pixidos\\Doctrine\\Queries\\" : "src/"
+        }
+    }
+}
