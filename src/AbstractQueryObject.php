@@ -19,33 +19,33 @@ use Pixidos\Doctrine\Queries\Result\ResultSetInterface;
  */
 abstract class AbstractQueryObject
 {
-
+    
     /**
      * @var Closure[] select
      */
     protected $select = [];
-
+    
     /**
      * @var Closure[] filters
      */
     protected $filters = [];
-
+    
     /**
      * @var Closure[] onPostFetch
      */
     protected $onPostFetch = [];
-
+    
     /**
      * @var EntityManagerInterface entityManager
      */
     private $entityManager;
-
+    
     /**
      * @var ResultSetFactoryInterface
      */
     private $resultSetFactory;
-
-
+    
+    
     /**
      * AbstractQueryObject constructor.
      *
@@ -57,17 +57,17 @@ abstract class AbstractQueryObject
         $this->entityManager = $entityManager;
         $this->resultSetFactory = $resultSetFactory;
     }
-
+    
     /**
      * @return ResultSetInterface
      */
     public function fetch(): ResultSetInterface
     {
         $query = $this->getQuery();
-
+        
         return $this->resultSetFactory->create($query, $this);
     }
-
+    
     /**
      * @return object
      * @throws NoResultException
@@ -76,56 +76,68 @@ abstract class AbstractQueryObject
     {
         $query = $this->getQuery()
                       ->setMaxResults(1);
-
-
+        
+        
         $singleResult = $query->getResult();
-
+        
         if (!$singleResult) {
             throw new NoResultException(); // simulate getSingleResult()
         }
-
-        $this->postFetch(new ArrayIterator($singleResult));
-
+        
+        $this->_postFetch(new ArrayIterator($singleResult));
+        
         /** @noinspection ReturnNullInspection */
         return array_shift($singleResult);
     }
-
+    
     /**
      * @return null|object
      */
     public function fetchOneOrNull()
     {
         try {
-
+            
             return $this->fetchOne();
-
+            
         } catch (NoResultException $exception) {
             return null;
         }
     }
-
+    
     /**
      * @param Iterator $iterator
+     *
+     * @internal
      */
-    public function postFetch(Iterator $iterator): void
+    public function _postFetch(Iterator $iterator): void
     {
         foreach ($this->onPostFetch as $closure) {
             $closure($this->entityManager->createQueryBuilder(), $iterator);
         }
     }
-
+    
     /**
      * @param Closure $postFetch
      *
      * @return AbstractQueryObject
      */
-    public function addPostFetch(Closure $postFetch): self
+    protected function addPostFetch(Closure $postFetch): self
     {
         $this->onPostFetch[] = $postFetch;
-
+        
         return $this;
     }
-
+    
+    /**
+     * @return Query
+     */
+    public function getQuery(): Query
+    {
+        return $this->doCreateQuery(
+            $this->entityManager->createQueryBuilder()
+        )->getQuery();
+    }
+    
     /**
      * Told doctrine to index the result by entity.{id}, in the third argument of ->from()
      * is necessary for the proper functioning of postFecth
@@ -135,7 +147,7 @@ abstract class AbstractQueryObject
      * @return QueryBuilder
      */
     abstract protected function doCreateQuery(QueryBuilder $queryBuilder): QueryBuilder;
-
+    
     /**
      * @param Closure $filter
      *
@@ -144,10 +156,10 @@ abstract class AbstractQueryObject
     protected function addFilter(Closure $filter): self
     {
         $this->filters[] = $filter;
-
+        
         return $this;
     }
-
+    
     /**
      * @param Closure $select
      *
@@ -156,10 +168,10 @@ abstract class AbstractQueryObject
     protected function addSelect(Closure $select): self
     {
         $this->filters[] = $select;
-
+        
         return $this;
     }
-
+    
     /**
      * @param QueryBuilder $queryBuilder
      *
@@ -170,10 +182,10 @@ abstract class AbstractQueryObject
         foreach ($this->filters as $modifier) {
             $modifier($queryBuilder);
         }
-
+        
         return $queryBuilder;
     }
-
+    
     /**
      * @param QueryBuilder $queryBuilder
      *
@@ -184,20 +196,10 @@ abstract class AbstractQueryObject
         foreach ($this->select as $modifier) {
             $modifier($queryBuilder);
         }
-
+        
         return $queryBuilder;
     }
-
-    /**
-     * @return Query
-     */
-    protected function getQuery(): Query
-    {
-        return $this->doCreateQuery(
-            $this->entityManager->createQueryBuilder()
-        )->getQuery();
-    }
-
+    
     /**
      * @param Iterator $iterator
      *

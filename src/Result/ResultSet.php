@@ -53,7 +53,7 @@ class ResultSet implements ResultSetInterface
         $this->query->setHydrationMode(AbstractQuery::HYDRATE_OBJECT);
 
         $this->iterator = new ArrayIterator($this->query->execute());
-        $this->queryObject->postFetch($this->iterator);
+        $this->queryObject->_postFetch($this->iterator);
 
         return $this->iterator;
     }
