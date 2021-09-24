@@ -3,7 +3,6 @@
 namespace Pixidos\Doctrine\Queries;
 
 use ArrayIterator;
-use Closure;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query;
@@ -21,17 +20,17 @@ abstract class AbstractQueryObject
 {
     
     /**
-     * @var Closure[] select
+     * @var array<callable(QueryBuilder):void> select
      */
     protected $select = [];
-    
+
     /**
-     * @var Closure[] filters
+     * @var array<callable(QueryBuilder):void> filters
      */
     protected $filters = [];
-    
+
     /**
-     * @var Closure[] onPostFetch
+     * @var array<callable(QueryBuilder,Iterator):void> onPostFetch
      */
     protected $onPostFetch = [];
     
@@ -115,16 +114,16 @@ abstract class AbstractQueryObject
             $closure($this->entityManager->createQueryBuilder(), $iterator);
         }
     }
-    
+
     /**
-     * @param Closure $postFetch
+     * @param callable(QueryBuilder,Iterator):void $postFetch
      *
      * @return AbstractQueryObject
      */
-    protected function addPostFetch(Closure $postFetch): self
+    protected function addPostFetch(callable $postFetch): self
     {
         $this->onPostFetch[] = $postFetch;
-        
+
         return $this;
     }
     
@@ -147,28 +146,28 @@ abstract class AbstractQueryObject
      * @return QueryBuilder
      */
     abstract protected function doCreateQuery(QueryBuilder $queryBuilder): QueryBuilder;
-    
+
     /**
-     * @param Closure $filter
+     * @param callable(QueryBuilder):void $filter
      *
      * @return $this
      */
-    protected function addFilter(Closure $filter): self
+    protected function addFilter(callable $filter): self
     {
         $this->filters[] = $filter;
-        
+
         return $this;
     }
-    
+
     /**
-     * @param Closure $select
+     * @param callable(QueryBuilder):void $select
      *
      * @return $this
      */
-    protected function addSelect(Closure $select): self
+    protected function addSelect(callable $select): self
     {
         $this->filters[] = $select;
-        
+
         return $this;
     }
     
